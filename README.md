@@ -3,11 +3,12 @@
 A set of HTML custom elements for editing source code with CodeMirror.
 
 codemirror-elements can be used anywhere HTML can:
-  - Plain HTML
-  - Markdown
-  - Frameworks like React or Angular
-  - Web component libraries like Lit or Stencil
-  - Vanilla JavaScript
+
+- Plain HTML
+- Markdown
+- Frameworks like React or Angular
+- Web component libraries like Lit or Stencil
+- Vanilla JavaScript
 
 ## Install
 
@@ -20,30 +21,38 @@ npm i codemirror-elements
 ### Import the element
 
 HTML:
+
 ```html
-<script type="module" src="./node_modules/codemirror-elements/index.js"></script>
+<script
+  type="module"
+  src="./node_modules/codemirror-elements/index.js"
+></script>
 ```
 
 JavaScript:
+
 ```js
-import 'codemirror-elements';
+import "codemirror-elements";
 ```
 
 ### Create a `<cm-editor>` element
 
 HTML:
+
 ```html
 <cm-editor></cm-editor>
 ```
 
 Lit:
+
 ```js
-html`<cm-editor></cm-editor>`
+html`<cm-editor></cm-editor>`;
 ```
 
 ### Set an initial value
 
 HTML:
+
 ```html
 <cm-editor value="console.log('Hello');"></cm-editor>
 ```
@@ -51,7 +60,7 @@ HTML:
 JavaScript:
 
 ```js
-const editor = document.querySelector('cm-editor');
+const editor = document.querySelector("cm-editor");
 editor.value = "console.log('Hello');";
 ```
 
@@ -60,10 +69,10 @@ editor.value = "console.log('Hello');";
 JavaScript:
 
 ```js
-const editor = document.querySelector('cm-editor');
-editor.addEventListener('codemirror-document-change', (e) => {
+const editor = document.querySelector("cm-editor");
+editor.addEventListener("codemirror-document-change", (e) => {
   const newValue = e.target.value;
-})
+});
 ```
 
 ### Add extensions
@@ -71,9 +80,16 @@ editor.addEventListener('codemirror-document-change', (e) => {
 Extensions are also HTML elements that you add as children of `<cm-editor>`:
 
 HTML:
+
 ```html
-<script type="module" src="./node_modules/codemirror-elements/lib/cm-lang-javascript.js"></script>
-<script type="module" src="./node_modules/codemirror-elements/lib/cm-theme-one-dark.js"></script>
+<script
+  type="module"
+  src="./node_modules/codemirror-elements/lib/cm-lang-javascript.js"
+></script>
+<script
+  type="module"
+  src="./node_modules/codemirror-elements/lib/cm-theme-one-dark.js"
+></script>
 
 <cm-editor>
   <cm-lang-javascript typescript></cm-lang-javascript>
@@ -82,6 +98,7 @@ HTML:
 ```
 
 This package implements a few CodeMirror extsions as elements:
+
 - `<cm-lang-javascript>`
 - `<cm-lang-html>`
 - `<cm-lang-css>`
@@ -92,11 +109,11 @@ The intention is to add more, either in this package, or as independently instal
 ### Write an extension element
 
 ```ts
-import {customElement} from 'lit/decorators.js';
-import {CodeMirrorExtensionElement} from 'codemirror-elements/lib/cm-extention-element.js';
-import {someExtension} from 'some-codemirror-extension';
+import { customElement } from "lit/decorators.js";
+import { CodeMirrorExtensionElement } from "codemirror-elements/lib/cm-extention-element.js";
+import { someExtension } from "some-codemirror-extension";
 
-@customElement('cm-lang-css')
+@customElement("cm-lang-css")
 export class CodeMirrorLangJavascript extends CodeMirrorExtensionElement {
   constructor() {
     super();
@@ -110,24 +127,23 @@ Extensions can also by dynamically update with `CodeMirrorExtensionElement.addEx
 See the `<cm-lang-javascript>` element for an example:
 
 ```ts
-import {type PropertyValues} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
-import {javascript} from '@codemirror/lang-javascript';
-import {CodeMirrorExtensionElement} from './cm-extention-element.js';
+import { type PropertyValues } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { javascript } from "@codemirror/lang-javascript";
+import { CodeMirrorExtensionElement } from "./cm-extention-element.js";
 
-@customElement('cm-lang-javascript')
+@customElement("cm-lang-javascript")
 export class CodeMirrorLangJavascript extends CodeMirrorExtensionElement {
-
-  @property({type: Boolean})
+  @property({ type: Boolean })
   jsx = false;
 
-  @property({type: Boolean})
+  @property({ type: Boolean })
   typescript = false;
 
   override update(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has('jsx') || changedProperties.has('typescript')) {
+    if (changedProperties.has("jsx") || changedProperties.has("typescript")) {
       this.setExtensions([
-        javascript({jsx: this.jsx, typescript: this.typescript}),
+        javascript({ jsx: this.jsx, typescript: this.typescript }),
       ]);
     }
     super.update(changedProperties);
