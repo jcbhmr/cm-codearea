@@ -7,22 +7,8 @@ This element is designed to behave like a `<textarea>`, but for _code_.
 <table><td>
 
 ```html
-<cm-codearea>
-console.log("Hello world!")
-</cm-codearea>
-```
-
-<td>
-
-![]()
-
-</table>
-
-<table><td>
-
-```html
 <cm-codearea codelang="js" lang="fr">
-console.log("Bonjour le monde!")
+  console.log("Bonjour le monde!")
 </cm-codearea>
 ```
 
@@ -31,32 +17,13 @@ console.log("Bonjour le monde!")
 ![]()
 
 </table>
-
-```html
-<form action="/api/run-go">
-  <cm-codearea name="mycode" required codelang="go" autocomplete="yes" autofocus>
-package main
-import "fmt"
-func main() {
-  fmt.Println("hello world")
-}
-  </cm-codearea>
-  <button>Run</button>
-</form>
-```
-
-```js
-myButton.addEventListener("click", () => {
-  const codearea = document.querySelector("cm-codearea[codelang=css]")
-  codearea.value = prettier.format(codearea.value, { parser: "css" })
-})
-```
 
 ### Definition
 
 **Content model:** Text.
 
 **Content attributes:**
+
 - _Global attributes_
 - **`autocomplete`:** Hint for intellisense features
 - **`cols`:** Maximum number of characters per line
@@ -73,9 +40,10 @@ myButton.addEventListener("click", () => {
 - **`wrap`:** How the value of the form control is to be wrapped for form submission
 
 **Accessibility considerations:**
+
 - **Implicit ARIA semantics:** `role=textbox`
 - **ARIA role, state and property allowances:**
-    No role other than textbox. Global `aria-*` attributes and any `aria-* `attributes applicable to the `textbox` role.
+  No role other than textbox. Global `aria-*` attributes and any `aria-* `attributes applicable to the `textbox` role.
 
 ### DOM interface
 
@@ -123,13 +91,6 @@ interface CMCodeAreaElement : HTMLElement {
 
 `<cm-textarea>` is a replaced element — it has intrinsic dimensions, like a raster image. By default, its display value is `inline-block`. Compared to other form elements it is relatively easy to style, with its box model, fonts, color scheme, etc. being easily manipulable using regular CSS.
 
-**Available CSS `::part()`s:**
+Use the `--resize: none` CSS variable instead of `resize: none` to customize the resizability of this element.
 
-Use the `--resize: none` instead of `resize: none` to customize the resizability of this element. 
-
-## How it works
-
-- The underlying implementation is a CodeMirror `EditorView`
-- When the CodeMirror `dispatch()` callback is triggered, dispatch those things as DOM events
-- When the `codelang` attribute or `codeLang` property change, change the language mode of the editor
-- Don't need to worry about multiple documents since this is a **single text box**
+<!-- **Available CSS `::part()`s:** -->

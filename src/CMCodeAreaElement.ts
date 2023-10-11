@@ -1,44 +1,9 @@
+import { basicSetup, EditorView } from "codemirror";
+import { EditorState, Compartment, Text } from "@codemirror/state";
+import { javascript } from "@codemirror/lang-javascript";
+import upgradeProperty from "./lib/upgradeProperty.js";
 import html from "./lib/html.js";
 import css from "./lib/css.js";
-import { EditorView, basicSetup } from "codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import {
-  Compartment,
-  EditorState,
-  Extension,
-  Transaction,
-} from "@codemirror/state";
-import {
-  keymap,
-  highlightSpecialChars,
-  drawSelection,
-  highlightActiveLine,
-  dropCursor,
-  rectangularSelection,
-  crosshairCursor,
-  lineNumbers,
-  highlightActiveLineGutter,
-} from "@codemirror/view";
-import {
-  defaultHighlightStyle,
-  syntaxHighlighting,
-  indentOnInput,
-  bracketMatching,
-  foldGutter,
-  foldKeymap,
-} from "@codemirror/language";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
-import {
-  autocompletion,
-  completionKeymap,
-  closeBrackets,
-  closeBracketsKeymap,
-} from "@codemirror/autocomplete";
-import { lintKeymap } from "@codemirror/lint";
-import CMTransactionEvent from "./CMTransactionEvent.js";
-import CMSelectionChangeEvent from "./CMSelectionChangeEvent.js";
-import upgradeProperty from "./lib/upgradeProperty.js";
 
 export default class CMCodeAreaElement extends HTMLElement {
   static get formAssociated() {
@@ -58,8 +23,11 @@ export default class CMCodeAreaElement extends HTMLElement {
       width: 100%;
       height: 100%;
     }
+    #slot {
+      display: none;
+    }
     #root {
-      border: solid 1px rgb(221, 221, 221);
+      display: contents;
     }
     .cm-editor {
       height: 100%;
@@ -69,77 +37,45 @@ export default class CMCodeAreaElement extends HTMLElement {
       overflow: auto;
     }
   `;
-  #internals: ElementInternals & { shadowRoot: ShadowRoot };
-  #editorView: EditorView;
-  #addedExtensions = new Set<Extension>();
-  #addedExtensionCompartment = new Compartment();
+  #internals = this.attachInternals();
+  #shadowRoot = this.attachShadow({ mode: "closed" });
+  #slot: HTMLSlotElement
+  #root: HTMLDivElement;
+  #readyState: "default" | "edited" = "default";
+  #view: EditorView;
   constructor() {
     super();
-    this.#internals = this.attachInternals() as any;
-    this.attachShadow({ mode: "open" });
-    this.#internals.shadowRoot.adoptedStyleSheets.push(
-      CMCodeAreaElement.#sheet,
-    );
-    this.#internals.shadowRoot.replaceChildren(html` <div id="root"></div> `);
-    const root = this.#internals.shadowRoot.getElementById("root")!;
-    this.#editorView = new EditorView({
-      dispatch: this.#editorViewDispatch,
-      extensions: [
-        lineNumbers(),
-        highlightActiveLineGutter(),
-        highlightSpecialChars(),
-        history(),
-        foldGutter(),
-        drawSelection(),
-        dropCursor(),
-        EditorState.allowMultipleSelections.of(true),
-        indentOnInput(),
-        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-        bracketMatching(),
-        closeBrackets(),
-        autocompletion(),
-        rectangularSelection(),
-        crosshairCursor(),
-        highlightActiveLine(),
-        highlightSelectionMatches(),
-        keymap.of([
-          ...closeBracketsKeymap,
-          ...defaultKeymap,
-          ...searchKeymap,
-          ...historyKeymap,
-          ...foldKeymap,
-          ...completionKeymap,
-          ...lintKeymap,
-        ]),
-        this.#addedExtensionCompartment.of([]),
-      ],
-      parent: root,
-    });
+    this.#shadowRoot.adoptedStyleSheets.push(CMCodeAreaElement.#sheet);
+    this.#shadowRoot.replaceChildren(html`<slot id="slot"></slot><div id="root"></div>`);
+    this.#slot = this.#shadowRoot.getElementById("slot")! as HTMLSlotElement
+    this.#root = this.#shadowRoot.getElementById("root")! as HTMLDivElement;
+    this.#slot.addEventListener("slotchange", () => {
+      if (this.#readyState === "default") {
+        this.value = this.defaultValue
+      }
+    })
     upgradeProperty(this, "codeLang");
   }
-  get editorView() {
-    return this.#editorView;
+  get defaultValue() {
+    const textNodes = Array.from(this.childNodes).filter(x => x instanceof Text)
+    return textNodes.map(x => x.nodeValue).join("")
   }
   get value() {
-    return this.editorView.state.doc.toString();
+    return this.#view.state.doc.toString()
   }
   set value(value) {
-    this.editorView.dispatch({
-      changes: [
-        { from: 0, to: this.editorView.state.doc.length, insert: value },
-      ],
-    });
+    const text = Text.of(value.split(/\r?\n/g))
+    this.#view.state.doc.replace(0, this.#view.state.doc.length, text)
   }
-  #editorViewDispatch = (tx: Transaction) => {
-    if (tx.docChanged) {
-      tx.changes.iterChanges(() => {});
-      console.log("Changed!", tx.changes);
-    }
-    if (tx.selection) {
-      console.log("Selection!", tx.selection);
-    }
-    this.#editorView.update([tx]);
-  };
   connectedCallback() {
+    console.log(this.defaultValue)
+    this.#view = new EditorView({
+      doc: this.defaultValue,
+      extensions: [
+        basicSetup,
+        javascript(),
+      ],
+      parent: this.#root
+    })
   }
 }
